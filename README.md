@@ -4,7 +4,10 @@
 
 
 ## TESTS
+## Fetch Command
 ![RadonOS IMG 1](radonosimg%231.png)
+## Help Command
 ![RadonOS IMG 2](radonosimg%232.png)
+## RadonOS working on vmware
 ![RadonOS IMG 3](radonosimg%233.png)
 
