@@ -131,7 +131,6 @@ char teclas(int scancode) {
   }
   if (shift == 1) {
     switch (scancode) {
-    // --- LETRAS MAIÚSCULAS ---
     case 0x1E:
       return 'A';
     case 0x30:
