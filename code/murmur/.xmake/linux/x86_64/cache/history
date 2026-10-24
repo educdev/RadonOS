@@ -1,0 +1,13 @@
+{
+    cmdlines = {
+        "xmake lua /usr/share/xmake/modules/private/utils/statistics.lua",
+        "xmake lua /usr/share/xmake/actions/build/cleaner.lua",
+        "xmake install -o /usr/local --root",
+        "xmake ",
+        "xmake ",
+        "xmake f -c",
+        "xmake f --toolchain=clang",
+        "xmake ",
+        "xmake install -o /usr/local --root"
+    }
+}

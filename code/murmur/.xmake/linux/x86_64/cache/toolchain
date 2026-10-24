@@ -1,0 +1,43 @@
+{
+    clang_arch_i386_plat_linux = {
+        plat = "linux",
+        llvm_target_triple = "x86_64-pc-linux-gnu",
+        arch = "i386",
+        __checked = {
+            program = "/usr/bin/clang",
+            name = "clang"
+        },
+        llvm_resourcedir = "/usr/lib/clang/22"
+    },
+    clang_arch_x86_64_plat_linux = {
+        __global = true,
+        plat = "linux",
+        llvm_target_triple = "x86_64-pc-linux-gnu",
+        arch = "x86_64",
+        __checked = {
+            program = "/usr/bin/clang",
+            name = "clang"
+        },
+        llvm_resourcedir = "/usr/lib/clang/22"
+    },
+    tool_target_murmur_linux_i386_ar = {
+        toolchain_info = {
+            plat = "linux",
+            name = "clang",
+            arch = "i386",
+            cachekey = "clang_arch_i386_plat_linux"
+        },
+        program = "/usr/bin/llvm-ar",
+        toolname = "llvm_ar"
+    },
+    tool_target_murmur_linux_i386_as = {
+        toolchain_info = {
+            plat = "linux",
+            name = "clang",
+            arch = "i386",
+            cachekey = "clang_arch_i386_plat_linux"
+        },
+        program = "/usr/bin/clang",
+        toolname = "clang"
+    }
+}
