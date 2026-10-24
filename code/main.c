@@ -185,68 +185,65 @@ char teclas(int scancode) {
     case 0x2C:
       return 'Z';
 
-    // --- SÍMBOLS DOS NÚMEROS (SHIFT + NÚMERO) ---
     case 0x02:
-      return '!'; // Shift + 1
+      return '!';
     case 0x03:
-      return '@'; // Shift + 2
+      return '@';
     case 0x04:
-      return '#'; // Shift + 3
+      return '#';
     case 0x05:
-      return '$'; // Shift + 4
+      return '$';
     case 0x06:
-      return '%'; // Shift + 5
+      return '%';
     case 0x07:
-      return '^'; // Shift + 6
+      return '^';
     case 0x08:
-      return '&'; // Shift + 7
+      return '&';
     case 0x09:
-      return '*'; // Shift + 8
+      return '*';
     case 0x0A:
-      return '('; // Shift + 9
+      return '(';
     case 0x0B:
-      return ')'; // Shift + 0
+      return ')';
 
-    // --- PONTUAÇÃO ESPECIAL COM SHIFT (LAYOUT US) ---
     case 0x0C:
-      return '_'; // Shift + Hífen
+      return '_';
     case 0x27:
-      return ':'; // Shift + Ponto e Vírgula (Gera os Dois Pontos)
+      return ':';
     case 0x28:
-      return '"'; // Shift + Aspas Simples (Gera as Aspas Duplas)
+      return '"';
     case 0x33:
-      return '<'; // Shift + Vírgula
+      return '<';
     case 0x35:
-      return '?'; // Shift + Barra
+      return '?';
 
-    // --- TECLAS DE CONTROLE (Não mudam com o Shift) ---
     case 0x0E:
-      return '\b'; // Backspace
+      return '\b';
     case 0x1C:
-      return 0x1C; // Enter
+      return 0x1C;
     case 0x39:
-      return ' '; // Espaço
+      return ' ';
     case 0x4A:
-      return '-'; // Menos do teclado numérico
+      return '-';
 
     default:
-      return 0; // Ignora qualquer outra tecla não mapeada
+      return 0;
     }
   } else if (shift == 0) {
 
     switch (scancode) {
-    // --- CONTROLE PURO ---
+
     case 0x0E:
-      return '\b'; // Backspace puro
-    // ENTER
+      return '\b';
+
     case 0x1C:
       return 0x1C;
-    // --- ESPAÇO ---
+
     case 0x39:
       return ' ';
     case 0x3A:
       return 0x3A;
-    // --- LETRAS MINÚSCULAS ---
+
     case 0x1E:
       return 'a';
     case 0x30:
@@ -299,8 +296,6 @@ char teclas(int scancode) {
       return 'y';
     case 0x2C:
       return 'z';
-
-    // --- NÚMEROS ---
     case 0x02:
       return '1';
     case 0x03:
@@ -322,18 +317,17 @@ char teclas(int scancode) {
     case 0x0B:
       return '0';
 
-    // --- SINAIS E PONTUAÇÃO (LAYOUT US) ---
-    case 0x0C: // Tecla - e _ (ao lado do 0)
+    case 0x0C:
       return '-';
-    case 0x27: // Tecla ; e : (ao lado do L)
+    case 0x27:
       return ';';
-    case 0x28: // Tecla ' e " (ao lado do Ponto e Vírgula)
+    case 0x28:
       return '\'';
-    case 0x33: // Tecla , e < (ao lado do M no layout US)
+    case 0x33:
       return ',';
-    case 0x35: // Tecla / e ? (ao lado do Shift direito no layout US)
+    case 0x35:
       return '/';
-    case 0x4A: // Tecla - no teclado numérico (Keypad)
+    case 0x4A:
       return '-';
     case 0x34:
       return '.';
@@ -489,14 +483,21 @@ void main(void) {
           drawtext(framebuffer, 255, 255, 0,
                    "mkfindir: Cria um arquivo dentro de uma pasta", i++, pitch,
                    bytes_per_pixel);
+          drawtext(framebuffer, 255, 200, 0,
+                   "dir: Lista os arquivos de uma pasta(recebe nome da pasta)",
+                   i++, pitch, bytes_per_pixel);
 
         } else if (startswith(textbuffer, "mkfile", 6)) {
           i++;
-          CreateFile(
-              slice(textbuffer, 2 + (lenstr("mkfile") + lenstr(splited[1]))),
-              splited[1]);
-          drawtext(framebuffer, 255, 255, 255, ReadFile(splited[1])->dados, i++,
-                   pitch, bytes_per_pixel);
+          if (CreateFile(slice(textbuffer,
+                               2 + (lenstr("mkfile") + lenstr(splited[1]))),
+                         splited[1]) == 0) {
+            drawtext(framebuffer, 255, 0, 0, "Erro: Arquivo ja existe", i++,
+                     pitch, bytes_per_pixel);
+          } else {
+            drawtext(framebuffer, 255, 255, 255, ReadFile(splited[1])->dados,
+                     i++, pitch, bytes_per_pixel);
+          }
         } else if (CMPSTR(textbuffer, "ls") == 1) {
           i++;
           int sixseven = 0;
