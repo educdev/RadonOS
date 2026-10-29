@@ -172,3 +172,21 @@ struct file *ReadFolderFile(const char *name, const char *fname) {
     return filee;
   }
 }
+int EditFile(uint8_t *file, const char *name) {
+  uint32_t hash = FNV_OFFSET_BASIS;
+  for (int i = 0; name[i] != '\0'; i++) {
+    hash ^= name[i];
+    hash *= FNV_PRIME;
+    hash &= 0xFFFFFFFFU;
+  }
+  hash %= 8388608U;
+  hash += 0x10000;
+  struct file *filee = (struct file *)(uintptr_t)hash;
+  if (filee->valid != 0xBA5EBA11) {
+    return 0;
+  }
+  filee->dados = file;
+  filee->size = lenstr((char *)file);
+
+  return 1;
+}
