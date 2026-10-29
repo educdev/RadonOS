@@ -1,16 +1,18 @@
 #include "fonte.h"
 #include "ramfs.h"
 #include <murmur/murmur.h>
-
 #include <sys/types.h>
 
 unsigned char tempo = 0;
 int color = 0;
 char textbuffer[10000];
+char mtextbuffer[10000];
+char texttobewrite[10000];
 char temp[1000];
 char tempp[1000];
+int valorlegal = 0;
 
-static char *splitvalue[10];
+static char *splitvalue[500];
 
 void drawtext(unsigned char *framebuffer, char r, char g, char b, char *texto,
               int cursor, unsigned short pitch, unsigned char bpp) {
@@ -40,6 +42,10 @@ static int startswith(char *text, char *text2, int cn) {
 }
 
 static char *slice(char *text, int cn) {
+  if (lenstr(text) < cn) {
+    tempp[0] = '\0';
+    return tempp;
+  }
   cpstr(tempp, text);
   tempp[cn - 1] = '\0';
   return (tempp + cn);
@@ -47,10 +53,11 @@ static char *slice(char *text, int cn) {
 
 static char **split(char *texto, char s) {
   char **resultado = splitvalue;
-  char *temp;
+
+  static char temp[10000];
   cpstr(temp, texto);
   char *start;
-  char j = 0;
+  int j = 0;
   resultado[j++] = temp;
   for (int i = 0; temp[i] != '\0'; i++) {
     if (temp[i] == s) {
@@ -58,6 +65,7 @@ static char **split(char *texto, char s) {
       resultado[j++] = &temp[i + 1];
     }
   }
+  valorlegal = j - 1;
   return resultado;
 }
 void frect(unsigned char *framebuffer, unsigned short pitch, int sx, int sy,
@@ -330,7 +338,8 @@ char teclas(int scancode) {
       return '-';
     case 0x34:
       return '.';
-
+    case 0x01:
+      return 0x04;
     default:
       return 0;
     }
@@ -354,7 +363,90 @@ int CMPSTR(const char *string, const char *string1) {
   }
   return 0;
 }
+void mango(const char *name, unsigned char *framebuffer, unsigned short pitch,
+           unsigned char byperpixel, unsigned short width,
+           unsigned short height) {
+  char nome[100];
+  cpstr(nome, (char *)name);
+  name = nome;
+  frect(framebuffer, pitch, 0, 0, width, height, 0, 0, 0, byperpixel);
+  drawtext(framebuffer, 0, 255, 10, "ESC: QUIT AND SAVE", (height / 16) - 1,
+           pitch, byperpixel);
+  int idx = 0;
+  int txtobwidx = 0;
+  int li = 0;
+  uint8_t capslock = 0;
+  char **papiro = split(ReadFile(name)->dados, '\n');
+  cpstr(texttobewrite, ReadFile(name)->dados);
+  txtobwidx = lenstr(texttobewrite);
+  cpstr(mtextbuffer, papiro[valorlegal]);
+  int fahh = 0;
+  for (fahh = 0; fahh < valorlegal; fahh++) {
+    drawtext(framebuffer, 255, 255, 255, papiro[fahh], li++, pitch, byperpixel);
+  }
+  li = valorlegal;
+  idx = lenstr(papiro[fahh]);
 
+  while (1) {
+    drawtext(framebuffer, 255, 255, 255, mtextbuffer, li, pitch, byperpixel);
+    while ((porta(0x64) & 0x01) == 0) {
+    }
+    unsigned char scancode = porta(0x60);
+    if ((scancode & 0x80) && scancode != 0xAA) {
+      continue;
+    }
+    char tec = teclas(scancode);
+    if (tec == 0) {
+      continue;
+    }
+    if (tec == 0x3A) {
+      if (capslock == 1) {
+        capslock = 0;
+      } else {
+        capslock = 1;
+      }
+      continue;
+    }
+    if (tec == 0x04) {
+      frect(framebuffer, pitch, 0, 0, width, height, 0, 0, 0, byperpixel);
+      static char temp[10000];
+      cpstr(temp, texttobewrite);
+      EditFile(temp, name);
+      for (int a = 0; a < txtobwidx; a++) {
+        texttobewrite[a] = 0;
+      }
+      break;
+    } else if (tec == 28) {
+      for (int a = 0; a < idx; a++) {
+        mtextbuffer[a] = 0;
+      }
+      texttobewrite[txtobwidx++] = '\n';
+      idx = 0;
+      li++;
+    } else if (tec == '\b') {
+      idx--;
+      txtobwidx--;
+      texttobewrite[txtobwidx] = '\0';
+      mtextbuffer[idx] = '\0';
+    } else {
+      if (capslock == 1) {
+        if (tec >= 'a' && tec <= 'z') {
+          mtextbuffer[idx++] = tec - 32;
+          texttobewrite[txtobwidx++] = tec - 32;
+        } else {
+          texttobewrite[txtobwidx++] = tec;
+          mtextbuffer[idx++] = tec;
+        }
+      } else {
+        texttobewrite[txtobwidx++] = tec;
+        mtextbuffer[idx++] = tec;
+      }
+    }
+
+    frect(framebuffer, pitch, 0, li * 16, width, (li * 16) + 16, 0, 0, 0,
+          byperpixel);
+  }
+}
 void main(void) {
 
   struct murmur_registry_entry *vbe = murmur_get_registry_key("VBE_INFO");
@@ -485,6 +577,8 @@ void main(void) {
           drawtext(framebuffer, 255, 200, 0,
                    "dir: Lista os arquivos de uma pasta(recebe nome da pasta)",
                    i++, pitch, bytes_per_pixel);
+          drawtext(framebuffer, 255, 150, 0, "mango: Abre o editor de texto",
+                   i++, pitch, bytes_per_pixel);
 
         } else if (startswith(textbuffer, "mkfile", 6)) {
           i++;
@@ -568,6 +662,9 @@ void main(void) {
             }
           }
 
+        } else if (startswith(textbuffer, "mango", 5)) {
+          mango(splited[1], framebuffer, pitch, bytes_per_pixel, width, height);
+          i = 0;
         } else {
           i++;
           drawtext(framebuffer, 255, 0, 0, "Erro: Comando nao encontrado", i++,
